@@ -1,53 +1,87 @@
 <template>
-  <v-card
-    class="mx-auto mt-5"
-    max-width="400"
-    dark
-    :color="grandTotal > 0 ? 'green darken-1' : 'red darken-1'"
-  >
-    <v-list-item two-line>
-      <v-list-item-content>
-        <v-list-item-title class="headline">{{id}}</v-list-item-title>
-        <!-- <v-list-item-subtitle>{{Date()}}</v-list-item-subtitle> -->
-      </v-list-item-content>
-    </v-list-item>
-
-    <v-list-item>
-      <v-list-item-icon>
-        <v-icon>mdi-send</v-icon>
-      </v-list-item-icon>
-      <v-list-item-subtitle>{{grandTotal}}</v-list-item-subtitle>
-    </v-list-item>
-
-    <v-list-item>
-      <v-list-item-icon>
-        <v-icon>{{grandTotal > 0 ? 'done' : 'cancel'}}</v-icon>
-      </v-list-item-icon>
-      <!-- <v-list-item-subtitle>48%</v-list-item-subtitle> -->
-    </v-list-item>
-
-    <v-list class="transparent">
-      <v-list-item v-for="item in forecast.transactions" :key="item.day">
-        <v-list-item-subtitle>{{ item.price }}/{{item.amount}}</v-list-item-subtitle>
-
-        <v-list-item-icon>
-          <v-icon>{{ item.type === "Buy" ? "remove_circle" : "add_circle" }}</v-icon>
-        </v-list-item-icon>
-        <v-list-item-subtitle class="text-right">{{ total(item) }}</v-list-item-subtitle>
-      </v-list-item>
-    </v-list>
-  </v-card>
+  <v-container>
+    <v-col cols="12" sm="6" md="4">
+      <v-menu
+        v-model="menu2"
+        :close-on-content-click="false"
+        :nudge-right="40"
+        transition="scale-transition"
+        offset-y
+        min-width="290px"
+      >
+        <template v-slot:activator="{ on, attrs }">
+          <v-text-field
+            v-model="date"
+            label="Picker without buttons"
+            prepend-icon="mdi-calendar"
+            readonly
+            v-bind="attrs"
+            v-on="on"
+          ></v-text-field>
+        </template>
+        <v-date-picker
+          v-model="date"
+          @input="menu2 = false"
+          @change="hello"
+        ></v-date-picker>
+      </v-menu>
+    </v-col>
+    <v-simple-table>
+      <template v-slot:default>
+        <thead>
+          <tr class="primary font-weight-bold white--text">
+            <th class="text-left">Date</th>
+            <th class="text-left">Description</th>
+            <th class="text-left">Action</th>
+            <th class="text-left">Price</th>
+            <th class="text-left">Quantity</th>
+            <th class="text-left">Amount</th>
+          </tr>
+        </thead>
+        <v-divider></v-divider>
+        <tbody>
+          <tr
+            v-for="item in stocks.transactions"
+            :key="item.name"
+            class="font-weight-bold white--text"
+            :class="item.action === 'Buy' ? 'green' : 'red '"
+          >
+            <td>{{ fromatdate(item.date) }}</td>
+            <td>{{ item.description }}</td>
+            <td>{{ item.action }}</td>
+            <td>{{ item.price }}</td>
+            <td>{{ item.quantity }}</td>
+            <td>{{ item.amount }}</td>
+          </tr>
+        </tbody>
+        <v-divider></v-divider>
+        <tfoot>
+          <tr
+            :class="grandTotal > 0 ? 'green' : 'red'"
+            class="font-weight-bold white--text"
+          >
+            <td colspan="5">Total</td>
+            <td>{{ grandTotal }}</td>
+          </tr>
+        </tfoot>
+      </template>
+    </v-simple-table>
+  </v-container>
 </template>
 
 <script>
 import axios from "axios";
+import moment from "moment";
+
 export default {
   props: ["id"],
   data() {
     return {
-      forecast: {
-        transactions: []
-      }
+      date: new Date().toISOString().substr(0, 10),
+      menu2: false,
+      stocks: {
+        transactions: [],
+      },
     };
   },
   created() {
@@ -56,26 +90,31 @@ export default {
   computed: {
     grandTotal() {
       let total = 0;
-
-      this.forecast.transactions.map(number => {
-        if (number.type === "Sell") {
-          total += number.price * number.amount;
-        } else {
-          total -= number.price * number.amount;
-        }
+      this.stocks.transactions.map((number) => {
+        total += parseFloat(number.amount);
       });
-      return total.toFixed(4);
-    }
+      return total.toFixed(2);
+    },
   },
   methods: {
-    total: function(item) {
-      return (item.price * item.amount).toFixed(4);
+    hello() {
+      axios
+        .get(`http://localhost:4000/${this.id}?date=2020-10-09`)
+        .then((response) => {
+          let ret = response.data[0].transactions.filter((d) => {
+            return new Date(d.date) >= new Date(this.date);
+          });
+          this.stocks.transactions = ret;
+        });
+    },
+    fromatdate(date) {
+      return moment(date).format("YYYY/MM/DD");
     },
     initialize() {
-      axios.get(`http://localhost:4000/${this.id}`).then(response => {
-        this.forecast = response.data[0];
+      axios.get(`http://localhost:4000/${this.id}`).then((response) => {
+        this.stocks = response.data[0];
       });
-    }
-  }
+    },
+  },
 };
 </script>
