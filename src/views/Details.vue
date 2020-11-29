@@ -77,6 +77,7 @@ export default {
   props: ["id"],
   data() {
     return {
+      url: "http://52.167.3.162",
       date: new Date().toISOString().substr(0, 10),
       menu2: false,
       stocks: {
@@ -98,20 +99,18 @@ export default {
   },
   methods: {
     hello() {
-      axios
-        .get(`http://localhost:4000/${this.id}?date=2020-10-09`)
-        .then((response) => {
-          let ret = response.data[0].transactions.filter((d) => {
-            return new Date(d.date) >= new Date(this.date);
-          });
-          this.stocks.transactions = ret;
+      axios.get(`${this.url}/${this.id}?date=2020-10-09`).then((response) => {
+        let ret = response.data[0].transactions.filter((d) => {
+          return new Date(d.date) >= new Date(this.date);
         });
+        this.stocks.transactions = ret;
+      });
     },
     fromatdate(date) {
       return moment(date).format("YYYY/MM/DD");
     },
     initialize() {
-      axios.get(`http://localhost:4000/${this.id}`).then((response) => {
+      axios.get(`${this.url}/${this.id}`).then((response) => {
         this.stocks = response.data[0];
       });
     },

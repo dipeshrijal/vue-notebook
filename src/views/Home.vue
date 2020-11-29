@@ -60,6 +60,7 @@
 import axios from "axios";
 export default {
   data: () => ({
+    url: "http://52.167.3.162",
     stocks: [],
     search: "",
     date: new Date().toISOString().substr(0, 10),
@@ -72,22 +73,20 @@ export default {
   },
   watch: {
     search: function (val) {
-      axios
-        .get(`http://localhost:4000?query=${val.toUpperCase()}`)
-        .then((response) => {
-          this.stocks = response.data;
-        });
+      axios.get(`${this.url}?query=${val.toUpperCase()}`).then((response) => {
+        this.stocks = response.data;
+      });
     },
   },
   methods: {
     hello() {
       console.log(this.date);
-      axios.get(`http://localhost:4000?date=${this.date}`).then((response) => {
+      axios.get(`${this.url}?date=${this.date}`).then((response) => {
         this.stocks = response.data;
       });
     },
     loss() {
-      axios.get(`http://localhost:4000`).then((response) => {
+      axios.get(`${this.url}`).then((response) => {
         console.log(response.data);
         let total = response.data
           .map((stock) => {
@@ -105,7 +104,7 @@ export default {
       });
     },
     initialize() {
-      axios.get("http://localhost:4000").then((response) => {
+      axios.get("${this.url}").then((response) => {
         this.stocks = response.data;
       });
     },
