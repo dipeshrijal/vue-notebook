@@ -104,7 +104,7 @@ export default {
       });
     },
     initialize() {
-      axios.get("${this.url}").then((response) => {
+      axios.get(`${this.url}`).then((response) => {
         this.stocks = response.data;
       });
     },
