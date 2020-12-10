@@ -60,7 +60,7 @@
 import axios from "axios";
 export default {
   data: () => ({
-    url: "http://52.167.3.162:4000",
+    url: "http://localhost:4000",
     stocks: [],
     search: "",
     date: new Date().toISOString().substr(0, 10),

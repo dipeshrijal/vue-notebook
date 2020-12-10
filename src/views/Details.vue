@@ -77,7 +77,7 @@ export default {
   props: ["id"],
   data() {
     return {
-      url: "http://52.167.3.162:4000",
+      url: "http://localhost:4000",
       date: new Date().toISOString().substr(0, 10),
       menu2: false,
       stocks: {
